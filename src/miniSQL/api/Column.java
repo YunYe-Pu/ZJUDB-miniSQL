@@ -2,22 +2,45 @@ package miniSQL.api;
 
 public class Column
 {
-
+	private boolean indexed;
+	private boolean unique;
+	
+	private SQLElement type;
+	private String name;
+	
+	public Column(String name, SQLElement type)
+	{
+		this.name = name;
+		this.type = type;
+	}
+	
 	public boolean isIndexed()
 	{
-		//TODO
-		return false;
+		return this.indexed;
 	}
 	
-	public boolean createIndex()
+	public boolean isUnique()
 	{
-		//TODO
-		return false;
+		return this.unique;
 	}
 	
-	public boolean dropIndex()
+	public String getName()
+	{
+		return this.name;
+	}
+	
+	public SQLElement getType()
+	{
+		return this.type;
+	}
+	
+	public void createIndex()
 	{
 		//TODO
-		return false;
+	}
+	
+	public void dropIndex()
+	{
+		//TODO
 	}
 }
