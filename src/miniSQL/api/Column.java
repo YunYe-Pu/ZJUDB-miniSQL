@@ -13,13 +13,13 @@ public class Column implements SQLSerializable<Column>
 	
 	private SQLElement type;
 	private String name;
-	private Table owner;
+	private Table owner = null;
+	private int indexInOwner = -1;
 	
 	public Column(String name, SQLElement type, boolean primary, boolean unique)
 	{
 		this.name = name;
 		this.type = type;
-		this.owner = null;
 		this.unique = unique;
 		this.primary = primary;
 		if(primary)
@@ -33,9 +33,15 @@ public class Column implements SQLSerializable<Column>
 		this.type = null;
 	}
 	
-	protected void setOwner(Table owner)
+	protected void setOwner(Table owner, int index)
 	{
 		this.owner = owner;
+		this.indexInOwner = index;
+	}
+	
+	protected int getIndexInOwner()
+	{
+		return this.indexInOwner;
 	}
 	
 	public boolean isIndexed()
@@ -63,23 +69,16 @@ public class Column implements SQLSerializable<Column>
 		return this.type;
 	}
 	
-	protected void createIndex(boolean addExistingRecord)
+	public void createIndex()
 	{
 		if(this.indexSubBuffer >= 0 || !this.unique)
 			return;
 		this.indexSubBuffer = this.owner.getBuffer().createSubBuffer(20 + 3 * this.type.getSize());
 		SubBuffer<BPlusTreeNode> subBuffer = this.owner.getBuffer().getSubBuffer(this.indexSubBuffer);
 		this.index = new BPlusTree(subBuffer, this.type, -1, -1);
-		if(!addExistingRecord) return;
 		this.owner.clearSelect();
-		int columIndex = this.owner.getColumns().indexOf(this);
 		for(Record rec : this.owner)
-			this.index.insertRecord(rec.get(columIndex), rec.getRecIndex());
-	}
-	
-	public void createIndex()
-	{
-		this.createIndex(true);
+			this.index.insertRecord(rec.get(this.indexInOwner), rec.getIndexInBuffer());
 	}
 	
 	public void dropIndex()

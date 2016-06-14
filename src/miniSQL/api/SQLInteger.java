@@ -44,6 +44,11 @@ public class SQLInteger extends SQLElement
 		return Integer.toString(this.content);
 	}
 	
+	public int toInteger()
+	{
+		return this.content;
+	}
+	
 	@Override
 	public SQLInteger read(byte[] block, int offset)
 	{

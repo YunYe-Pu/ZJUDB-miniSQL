@@ -49,6 +49,11 @@ public class SQLFloat extends SQLElement
 	{
 		return Float.toString(this.content);
 	}
+	
+	public float toFloat()
+	{
+		return this.content;
+	}
 
 	@Override
 	public SQLFloat read(byte[] block, int offset)
