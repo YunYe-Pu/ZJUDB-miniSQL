@@ -39,7 +39,7 @@ public class SQLString extends SQLElement
 		for(i = 0; i < this.length && i < data.length; i++)
 			block[i + offset] = data[i];
 		for(; i < this.length; i++)
-			block[i + offset] = (byte)' ';
+			block[i + offset] = 0;
 	}
 
 	@Override
@@ -51,9 +51,10 @@ public class SQLString extends SQLElement
 	@Override
 	public SQLString read(byte[] block, int offset)
 	{
-		char[] data = new char[this.length];
 		int i;
-		for(i = 0; i < this.length; i++)
+		for(i = offset; i < this.length && block[i] != 0; i++);
+		char[] data = new char[i];
+		for(i = 0; i < data.length; i++)
 			data[i] = (char)block[i + offset];
 		return new SQLString(String.valueOf(data), this.length);
 	}

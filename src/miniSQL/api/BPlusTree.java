@@ -98,7 +98,7 @@ public class BPlusTree
 			return false;
 		if(this.height < 0)
 		{
-			this.root.index = this.buffer.allocateBlock();
+			this.root.index = this.buffer.allocateEntry();
 			this.root.ptr[0] = index;
 			this.root.key[0] = key;
 			this.root.ptr[1] = -1;
@@ -120,7 +120,7 @@ public class BPlusTree
 		if(currNode.keyCnt >= 3)
 		{
 			newNode = new BPlusTreeNode(this.root.keyType);
-			newNode.index = this.buffer.allocateBlock();
+			newNode.index = this.buffer.allocateEntry();
 			int i, j;
 			for(i = 3, j = 2; i >= 0; i--)
 			{
@@ -180,7 +180,7 @@ public class BPlusTree
 			if(currNode.keyCnt == 4)
 			{
 				newNode = new BPlusTreeNode(this.root.keyType);
-				newNode.index = this.buffer.allocateBlock();
+				newNode.index = this.buffer.allocateEntry();
 				nextMedianKey = currNode.key[1];
 				newNode.key[0] = currNode.key[2];
 				newNode.ptr[0] = currNode.ptr[2];
@@ -215,7 +215,7 @@ public class BPlusTree
 		if(newIndex >= 0)//split the root
 		{
 			newNode = new BPlusTreeNode(this.root.keyType);
-			newNode.index = this.buffer.allocateBlock();
+			newNode.index = this.buffer.allocateEntry();
 			newNode.key[0] = medianKey;
 			newNode.ptr[0] = this.root.index;
 			newNode.ptr[1] = newIndex;
@@ -252,7 +252,7 @@ public class BPlusTree
 		}
 		if(this.stackPtr == 0)
 		{
-			this.buffer.removeBlock(currNode.index);
+			this.buffer.removeEntry(currNode.index);
 			this.root.index = -1;
 			this.height = -1;
 			return true;
@@ -270,7 +270,7 @@ public class BPlusTree
 			prevNode.ptr[3] = currNode.ptr[3];
 			this.buffer.write(prevNode.index, prevNode);
 		}
-		this.buffer.removeBlock(currNode.index);
+		this.buffer.removeEntry(currNode.index);
 		
 		this.stackPtr--;
 		currNode = this.nodeStack[this.stackPtr];
@@ -302,7 +302,7 @@ public class BPlusTree
 					sibling.key[0] = parent.key[0];
 					sibling.keyCnt++;
 					shiftContent(parent, 0);
-					this.buffer.removeBlock(currNode.index);
+					this.buffer.removeEntry(currNode.index);
 				}
 			}
 			else
@@ -325,7 +325,7 @@ public class BPlusTree
 					sibling.ptr[2] = currNode.ptr[0];
 					sibling.keyCnt++;
 					shiftContent(parent, path);
-					this.buffer.removeBlock(currNode.index);
+					this.buffer.removeEntry(currNode.index);
 				}
 			}
 			currNode = parent;

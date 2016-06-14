@@ -51,7 +51,7 @@ public class Record implements SQLSerializable<Record>
 			return false;
 		else
 		{
-			this.owner.getRecBuffer().removeBlock(this.indexInBuffer);
+			this.owner.getRecBuffer().removeEntry(this.indexInBuffer);
 			List<Column> columns = this.owner.getColumns();
 			for(int i = 0; i < columns.size(); i++)
 			{
@@ -59,6 +59,7 @@ public class Record implements SQLSerializable<Record>
 				if(t != null)
 					t.deleteRecord(this.elements[i]);
 			}
+			this.indexInBuffer = -1;
 			return true;
 		}
 	}

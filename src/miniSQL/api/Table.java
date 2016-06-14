@@ -28,10 +28,10 @@ public class Table implements Iterable<Record>
 		this.recordBuffer = buffer.getSubBuffer(1);
 		SubBuffer<Column> columnBuffer = buffer.getSubBuffer(0);
 		Column dummy = new Column(this);
-		int j = columnBuffer.getMaxBlockIndex();
+		int j = columnBuffer.getMaxEntryIndex();
 		for(int i = 0; i < j; i++)
 		{
-			if(!columnBuffer.isBlockValid(i))
+			if(!columnBuffer.isEntryValid(i))
 				continue;
 			this.schema.add(columnBuffer.read(i, dummy));
 		}
@@ -48,7 +48,7 @@ public class Table implements Iterable<Record>
 		for(Column e : schema)
 		{
 			recordSize += e.getType().getSize();
-			columnBuffer.write(columnBuffer.allocateBlock(), e);
+			columnBuffer.write(columnBuffer.allocateEntry(), e);
 			e.setOwner(this, i++);
 		}
 		buffer.createSubBuffer(recordSize);
@@ -128,6 +128,7 @@ public class Table implements Iterable<Record>
 	{
 		this.currIterator = null;
 		this.currPredicate = predicatePlaceholder;
+		this.uniqueRecord = null;
 	}
 	
 	public boolean insert(Record record)
@@ -149,7 +150,7 @@ public class Table implements Iterable<Record>
 						return false;
 			}
 		}
-		int block = this.recordBuffer.allocateBlock();
+		int block = this.recordBuffer.allocateEntry();
 		record.setIndexInBuffer(block);
 		this.recordBuffer.write(block, record);
 		for(int i = 0; i < this.schema.size(); i++)
@@ -209,7 +210,7 @@ public class Table implements Iterable<Record>
 		public LinearIterator(Predicate<Record> predicate)
 		{
 			this.currIndex = 0;
-			this.maxIndex = recordBuffer.getMaxBlockIndex();
+			this.maxIndex = recordBuffer.getMaxEntryIndex();
 			this.nextRecord = null;
 			this.currPredicate = predicate;
 		}
@@ -219,7 +220,7 @@ public class Table implements Iterable<Record>
 		{
 			do
 			{
-				while(!recordBuffer.isBlockValid(currIndex) && currIndex < maxIndex)
+				while(!recordBuffer.isEntryValid(currIndex) && currIndex < maxIndex)
 					currIndex++;
 				if(currIndex >= maxIndex)
 					return false;
