@@ -20,6 +20,11 @@ public class Record implements SQLSerializable<Record>
 		this.elements[index] = value;
 	}
 	
+	public void parse(int index, String raw) throws Exception
+	{
+		this.elements[index] = this.owner.getColumns().get(index).getType().parse(raw);
+	}
+	
 	public SQLElement get(int index)
 	{
 		return this.elements[index];
