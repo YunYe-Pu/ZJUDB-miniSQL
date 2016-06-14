@@ -23,15 +23,15 @@ public class Main
 			}
 			
 			temp = scanner.nextLine();
-			temp.trim();
+			temp = temp.trim();
 			
 			if (temp.indexOf(';')==-1) {
-				cmd += temp;
+				cmd += " " + temp;
 			} else {
-				cmd += temp.substring(0,temp.indexOf(";")).trim();
+				cmd += " " + temp.substring(0,temp.indexOf(";")).trim();
 				try
 				{
-					Parser.parse(cmd);
+					Parser.parse(cmd.trim());
 				} catch (Exception e){
 					if (e.getMessage().equals("quit")) {
 						System.out.println("Bye");
@@ -43,8 +43,10 @@ public class Main
 							scanner = new Scanner(new File(path));
 						} catch (Exception eFile) {
 							System.out.println(eFile.getMessage());
-							break;
+							scanner = scannerStack.pop();
 						}
+					} else {
+						System.out.println(e.getMessage());
 					}
 				}
 				cmd = new String();
