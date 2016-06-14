@@ -39,7 +39,7 @@ public class SQLString extends SQLElement
 		for(i = 0; i < this.length && i < data.length; i++)
 			block[i + offset] = data[i];
 		for(; i < this.length; i++)
-			block[i + offset] = (byte)0;
+			block[i + offset] = (byte)' ';
 	}
 
 	@Override

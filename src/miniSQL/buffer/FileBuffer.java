@@ -11,17 +11,30 @@ public class FileBuffer
 		return null;
 	}
 	
-	public void write(int byteOffset, SQLSerializable content)
+	public <T> void write(int byteOffset, SQLSerializable<T> content)
 	{
 		//TODO
 	}
 	
-	public void insertBlock(int blockOffset)
+	public int createSubBuffer(int size)
 	{
 		//TODO
+		return 0;
 	}
 	
-	public void deleteBlock(int blockOffset)
+	public boolean isSubBufferValid(int index)
+	{
+		//TODO
+		return false;
+	}
+	
+	public <T extends SQLSerializable<T>> SubBuffer<T> getSubBuffer(int index)
+	{
+		//TODO
+		return null;
+	}
+	
+	public void deleteSubBuffer(int index)
 	{
 		//TODO
 	}
