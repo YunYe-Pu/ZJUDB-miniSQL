@@ -319,7 +319,7 @@ public class Table implements Iterable<Record>
 		@Override
 		public boolean hasNext()
 		{
-			return rec == null;
+			return rec != null;
 		}
 
 		@Override
