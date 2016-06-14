@@ -1,54 +1,58 @@
 package miniSQL.api;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Record implements SQLSerializable<Record>
 {
-	private ArrayList<SQLElement> elements;
+	private SQLElement[] elements;
 	private Table owner;
-	private int index;
+	private int indexInBuffer;
 	
 	public Record(Table owner)
 	{
 		this.owner = owner;
-		this.elements = new ArrayList<>(owner.getColumns().size());
-		this.index = -1;
+		this.elements = new SQLElement[owner.getColumns().size()];
+		this.indexInBuffer = -1;
 	}
 	
 	public void set(int index, SQLElement value)
 	{
-		this.elements.set(index, value);
+		this.elements[index] = value;
 	}
 	
 	public SQLElement get(int index)
 	{
-		return this.elements.get(index);
+		return this.elements[index];
 	}
 	
-	public List<SQLElement> getElements()
+	public SQLElement[] getElements()
 	{
 		return this.elements;
 	}
 	
-	public int getRecIndex()
+	public int getIndexInBuffer()
 	{
-		return this.index;
+		return this.indexInBuffer;
+	}
+	
+	public void setIndexInBuffer(int index)
+	{
+		this.indexInBuffer = index;
 	}
 	
 	public boolean remove()
 	{
-		if(this.index < 0)
+		if(this.indexInBuffer < 0)
 			return false;
 		else
 		{
-			this.owner.getRecBuffer().removeBlock(this.index);
+			this.owner.getRecBuffer().removeBlock(this.indexInBuffer);
 			List<Column> columns = this.owner.getColumns();
 			for(int i = 0; i < columns.size(); i++)
 			{
 				BPlusTree t = columns.get(i).getIndex();
 				if(t != null)
-					t.deleteRecord(this.elements.get(i));
+					t.deleteRecord(this.elements[i]);
 			}
 			return true;
 		}

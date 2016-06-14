@@ -1,10 +1,23 @@
 package miniSQL.buffer;
 
+import java.io.File;
+
 import miniSQL.api.SQLSerializable;
 
 public class FileBuffer
 {
-
+	public FileBuffer(String tableFileName)
+	{
+		
+	}
+	public FileBuffer(File tableFile) 
+	{
+		
+	}
+	public void close()
+	{
+		
+	}
 	public byte[] getBlock(int blockOffset)
 	{
 		//TODO
