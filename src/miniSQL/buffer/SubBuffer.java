@@ -4,6 +4,8 @@ import miniSQL.api.SQLSerializable;
 
 public class SubBuffer<T extends SQLSerializable<T>>
 {
+	FileBuffer filebuf;
+	
 	public T read(int index, T obj)
 	{
 		//TODO

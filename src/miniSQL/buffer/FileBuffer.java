@@ -4,7 +4,11 @@ import miniSQL.api.SQLSerializable;
 
 public class FileBuffer
 {
-
+	public static final int BlockCount = 64;
+	public static final int BlockSize = 8192;
+	
+	Block[] blocks = new Block[BlockCount];
+	
 	public byte[] getBlock(int blockOffset)
 	{
 		//TODO
