@@ -44,26 +44,23 @@ public class Table implements Iterable<Record>
 		buffer.createSubBuffer(schema.get(0).getSize());
 		SubBuffer<Column> columnBuffer = buffer.getSubBuffer(0);
 		int recordSize = 0;
+		int i = 0;
 		for(Column e : schema)
 		{
 			recordSize += e.getType().getSize();
 			columnBuffer.write(columnBuffer.allocateBlock(), e);
-			e.setOwner(this);
-			if(e.isPrimary())
-				e.createIndex(false);
+			e.setOwner(this, i++);
 		}
 		buffer.createSubBuffer(recordSize);
 		this.recordBuffer = buffer.getSubBuffer(1);
+		for(Column e : schema)
+			if(e.isPrimary())
+				e.createIndex();
 	}
 	
 	public void selectAnd(Column column, SQLPredicate predicate, SQLElement value)
 	{
-		this.selectAnd(this.schema.indexOf(column), predicate, value);
-	}
-	
-	public void selectAnd(int columnIndex, SQLPredicate predicate, SQLElement value)
-	{
-		Column column = this.schema.get(columnIndex);
+		int columnIndex = column.getIndexInOwner();
 		boolean b = column.isIndexed() && this.uniqueRecord == null;
 		if(b && predicate == SQLPredicate.EQUAL)
 		{
@@ -122,6 +119,11 @@ public class Table implements Iterable<Record>
 		}
 	}
 	
+	public void selectAnd(int columnIndex, SQLPredicate predicate, SQLElement value)
+	{
+		this.selectAnd(this.schema.get(columnIndex), predicate, value);
+	}
+	
 	public void clearSelect()
 	{
 		this.currIterator = null;
@@ -131,14 +133,28 @@ public class Table implements Iterable<Record>
 	public boolean insert(Record record)
 	{
 		this.clearSelect();
-		for(Record rec : this)
+		boolean flag = false;
+		for(Column col : this.schema)
+			if(col.isUnique())
+			{
+				flag = true;
+				break;
+			}
+		if(flag)
 		{
-			for(int i = 0; i < this.schema.size(); i++)
-				if(this.schema.get(i).isUnique() && rec.get(i).compareTo(record.get(i)) == 0)
-					return false;
+			for(Record rec : this)
+			{
+				for(int i = 0; i < this.schema.size(); i++)
+					if(this.schema.get(i).isUnique() && rec.get(i).compareTo(record.get(i)) == 0)
+						return false;
+			}
 		}
-		int i = this.recordBuffer.allocateBlock();
-		this.recordBuffer.write(i, record);
+		int block = this.recordBuffer.allocateBlock();
+		record.setIndexInBuffer(block);
+		this.recordBuffer.write(block, record);
+		for(int i = 0; i < this.schema.size(); i++)
+			if(this.schema.get(i).isIndexed())
+				this.schema.get(i).getIndex().insertRecord(record.get(i), record.getIndexInBuffer());
 		return true;
 	}
 	
@@ -147,7 +163,7 @@ public class Table implements Iterable<Record>
 		return this.schema;
 	}
 	
-	public int getColumn(String columnName)
+	public int getColumnIndex(String columnName)
 	{
 		for(int i = 0; i < this.schema.size(); i++)
 			if(this.schema.get(i).getName().equals(columnName))
