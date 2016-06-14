@@ -96,8 +96,8 @@ public class Column implements SQLSerializable<Column>
 	}
 
 	
-	//Data: column name(32), index sub-buffer(-1 for not indexed)(4),
-	//{is primary, is unique, type}(1), type attr.(4), index height(4), index root(4)
+	//Data: column name(32), index sub-buffer(-1 for not indexed)(4), type attr.(4),
+	//type attr.(4), index root(4), index height(4), {is primary, is unique, type}(1)
 	@Override
 	public int getSize()
 	{
@@ -144,7 +144,7 @@ public class Column implements SQLSerializable<Column>
 		int typeAttr = readInt(block, offset + 4);
 		int indexRoot = readInt(block, offset + 8);
 		int indexHeight = readInt(block, offset + 12);
-		byte flags = block[offset + 8];
+		byte flags = block[offset + 16];
 		ret.primary = (flags & 0x80) != 0;
 		ret.unique = (flags & 0x40) != 0;
 		flags &= 0x3f;
