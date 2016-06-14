@@ -34,7 +34,6 @@ public class Main
 					Parser.parse(cmd.trim());
 				} catch (Exception e){
 					if (e.getMessage().equals("quit")) {
-						System.out.println("Bye");
 						break;
 					} else if (e.getMessage().startsWith("execfile")) {
 						scannerStack.push(scanner);
