@@ -4,7 +4,5 @@ public abstract class SQLElement implements Comparable<SQLElement>, SQLSerializa
 {
 	public abstract String toString();
 	
-	public abstract SQLElement read(byte[] block, int offset);
-	
 	public abstract SQLElement parse(String raw) throws Exception;
 }
