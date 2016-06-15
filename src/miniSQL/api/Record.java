@@ -1,5 +1,6 @@
 package miniSQL.api;
 
+import java.io.PrintStream;
 import java.util.List;
 
 public class Record implements SQLSerializable<Record>
@@ -62,6 +63,14 @@ public class Record implements SQLSerializable<Record>
 			this.indexInBuffer = -1;
 			return true;
 		}
+	}
+	
+	public void print(int[] columnWidth, PrintStream output)
+	{
+		output.print('|');
+		for(int i = 0; i < this.elements.length; i++)
+			Table.printString(columnWidth[i], this.elements[i].toString(), output);
+		output.println();
 	}
 
 	@Override

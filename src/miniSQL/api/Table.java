@@ -1,5 +1,6 @@
 package miniSQL.api;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -170,6 +171,49 @@ public class Table implements Iterable<Record>
 			if(this.schema.get(i).getName().equals(columnName))
 				return i;
 		return -1;
+	}
+	
+	public void printHeader(int[] columnWidth, PrintStream output)
+	{
+		this.printFoot(columnWidth, output);
+		output.print('|');
+		for(int i = 0; i < this.schema.size(); i++)
+			printString(columnWidth[i], this.schema.get(i).getName(), output);
+		output.println();
+		this.printFoot(columnWidth, output);
+	}
+	
+	public void printFoot(int[] columnWidth, PrintStream output)
+	{
+		output.print('+');
+		for(int i = 0; i < columnWidth.length; i++)
+		{
+			for(int j = 0; j < columnWidth[i]; j++)
+				output.print('-');
+			output.print('+');
+		}
+		output.println();
+	}
+	
+	public static void printString(int width, String content, PrintStream output)
+	{
+		if(content.length() <= width)
+		{
+			int space = width - content.length();
+			int s = space / 2;
+			for(int i = 0; i < s; i++)
+				output.print(' ');
+			output.print(content);
+			s = space - s;
+			for(int i = 0; i < s; i++)
+				output.print(' ');
+			output.print('|');
+		}
+		else
+		{
+			output.print(content.substring(0, width - 2));
+			output.print("..|");
+		}
 	}
 
 	@Override

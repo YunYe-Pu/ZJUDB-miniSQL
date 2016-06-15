@@ -135,8 +135,10 @@ public class Column implements SQLSerializable<Column>
 	public Column read(byte[] block, int offset)
 	{
 		Column ret = new Column(this.owner);
-		char[] c = new char[32];
-		for(int i = 0; i < 32; i++)
+		int i;
+		for(i = offset; block[i] != 0 && i < 32; i++);
+		char[] c = new char[i];	
+		for(i = 0; i < c.length; i++)
 			c[i] = (char)block[offset + i];
 		offset += 32;
 		ret.name = String.valueOf(c);
