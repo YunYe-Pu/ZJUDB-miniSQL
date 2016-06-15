@@ -408,7 +408,11 @@ public class Parser
 					}
 				}
 			}
-			
+			table.printHeader(columnWidth, System.out);
+			for (Record record : table) {
+				record.print(columnWidth, System.out);
+			}
+			table.printFoot(columnWidth,System.out);
 			fileBuffer.close();
 			if (cnt==0) {
 				System.out.println("Empty result.");
