@@ -36,6 +36,10 @@ public class Main
 					if (e.getMessage().equals("quit")) {
 						break;
 					} else if (e.getMessage().startsWith("execfile")) {
+						if (scannerStack.size()>20) {
+							System.out.println("Too many scripts.");
+							break;
+						}
 						scannerStack.push(scanner);
 						String path = e.getMessage().substring(8,e.getMessage().length()).trim();
 						try {
