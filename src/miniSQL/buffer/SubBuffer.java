@@ -15,24 +15,24 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		//TODO
 	}
 	
-	public int allocateBlock()
+	public int allocateEntry()
 	{
 		//TODO
 		return 0;
 	}
 	
-	public void removeBlock(int index)
+	public void removeEntry(int index)
 	{
 		//TODO
 	}
 	
-	public int getMaxBlockIndex()
+	public int getMaxEntryIndex()
 	{
 		//TODO
 		return 0;
 	}
 	
-	public boolean isBlockValid(int index)
+	public boolean isEntryValid(int index)
 	{
 		//TODO
 		return false;

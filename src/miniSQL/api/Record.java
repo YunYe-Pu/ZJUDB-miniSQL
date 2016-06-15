@@ -1,5 +1,6 @@
 package miniSQL.api;
 
+import java.io.PrintStream;
 import java.util.List;
 
 public class Record implements SQLSerializable<Record>
@@ -51,7 +52,7 @@ public class Record implements SQLSerializable<Record>
 			return false;
 		else
 		{
-			this.owner.getRecBuffer().removeBlock(this.indexInBuffer);
+			this.owner.getRecBuffer().removeEntry(this.indexInBuffer);
 			List<Column> columns = this.owner.getColumns();
 			for(int i = 0; i < columns.size(); i++)
 			{
@@ -59,8 +60,17 @@ public class Record implements SQLSerializable<Record>
 				if(t != null)
 					t.deleteRecord(this.elements[i]);
 			}
+			this.indexInBuffer = -1;
 			return true;
 		}
+	}
+	
+	public void print(int[] columnWidth, PrintStream output)
+	{
+		output.print('|');
+		for(int i = 0; i < this.elements.length; i++)
+			Table.printString(columnWidth[i], this.elements[i].toString(), output);
+		output.println();
 	}
 
 	@Override

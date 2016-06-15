@@ -1,5 +1,6 @@
 package miniSQL.api;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,10 +29,10 @@ public class Table implements Iterable<Record>
 		this.recordBuffer = buffer.getSubBuffer(1);
 		SubBuffer<Column> columnBuffer = buffer.getSubBuffer(0);
 		Column dummy = new Column(this);
-		int j = columnBuffer.getMaxBlockIndex();
+		int j = columnBuffer.getMaxEntryIndex();
 		for(int i = 0; i < j; i++)
 		{
-			if(!columnBuffer.isBlockValid(i))
+			if(!columnBuffer.isEntryValid(i))
 				continue;
 			this.schema.add(columnBuffer.read(i, dummy));
 		}
@@ -48,7 +49,7 @@ public class Table implements Iterable<Record>
 		for(Column e : schema)
 		{
 			recordSize += e.getType().getSize();
-			columnBuffer.write(columnBuffer.allocateBlock(), e);
+			columnBuffer.write(columnBuffer.allocateEntry(), e);
 			e.setOwner(this, i++);
 		}
 		buffer.createSubBuffer(recordSize);
@@ -128,6 +129,7 @@ public class Table implements Iterable<Record>
 	{
 		this.currIterator = null;
 		this.currPredicate = predicatePlaceholder;
+		this.uniqueRecord = null;
 	}
 	
 	public boolean insert(Record record)
@@ -149,7 +151,7 @@ public class Table implements Iterable<Record>
 						return false;
 			}
 		}
-		int block = this.recordBuffer.allocateBlock();
+		int block = this.recordBuffer.allocateEntry();
 		record.setIndexInBuffer(block);
 		this.recordBuffer.write(block, record);
 		for(int i = 0; i < this.schema.size(); i++)
@@ -169,6 +171,49 @@ public class Table implements Iterable<Record>
 			if(this.schema.get(i).getName().equals(columnName))
 				return i;
 		return -1;
+	}
+	
+	public void printHeader(int[] columnWidth, PrintStream output)
+	{
+		this.printFoot(columnWidth, output);
+		output.print('|');
+		for(int i = 0; i < this.schema.size(); i++)
+			printString(columnWidth[i], this.schema.get(i).getName(), output);
+		output.println();
+		this.printFoot(columnWidth, output);
+	}
+	
+	public void printFoot(int[] columnWidth, PrintStream output)
+	{
+		output.print('+');
+		for(int i = 0; i < columnWidth.length; i++)
+		{
+			for(int j = 0; j < columnWidth[i]; j++)
+				output.print('-');
+			output.print('+');
+		}
+		output.println();
+	}
+	
+	public static void printString(int width, String content, PrintStream output)
+	{
+		if(content.length() <= width)
+		{
+			int space = width - content.length();
+			int s = space / 2;
+			for(int i = 0; i < s; i++)
+				output.print(' ');
+			output.print(content);
+			s = space - s;
+			for(int i = 0; i < s; i++)
+				output.print(' ');
+			output.print('|');
+		}
+		else
+		{
+			output.print(content.substring(0, width - 2));
+			output.print("..|");
+		}
 	}
 
 	@Override
@@ -209,7 +254,7 @@ public class Table implements Iterable<Record>
 		public LinearIterator(Predicate<Record> predicate)
 		{
 			this.currIndex = 0;
-			this.maxIndex = recordBuffer.getMaxBlockIndex();
+			this.maxIndex = recordBuffer.getMaxEntryIndex();
 			this.nextRecord = null;
 			this.currPredicate = predicate;
 		}
@@ -219,7 +264,7 @@ public class Table implements Iterable<Record>
 		{
 			do
 			{
-				while(!recordBuffer.isBlockValid(currIndex) && currIndex < maxIndex)
+				while(!recordBuffer.isEntryValid(currIndex) && currIndex < maxIndex)
 					currIndex++;
 				if(currIndex >= maxIndex)
 					return false;
