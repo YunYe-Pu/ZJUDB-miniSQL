@@ -1,19 +1,8 @@
 package miniSQL.interpreter;
-import java.awt.List;
 import java.io.File;
-import java.lang.ProcessBuilder.Redirect;
-import java.nio.channels.SelectableChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.jar.Attributes.Name;
-
-import javax.lang.model.element.Element;
-import javax.sql.rowset.FilteredRowSet;
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-import javax.xml.transform.Templates;
-
-import org.w3c.dom.css.ElementCSSInlineStyle;
+import java.util.List;
 
 import miniSQL.api.Column;
 import miniSQL.api.Record;
@@ -55,12 +44,12 @@ public class Parser
 			createIndex(cmd.substring(12,cmd.length()).trim());
 		} else if (cmd.startsWith("drop index")) {
 			dropIndex(cmd.substring(10,cmd.length()).trim());
-		} else if (cmd.startsWith("select")) {
-			System.out.println("select");
+		} else if (cmd.startsWith("select * from")) {
+			selectFrom(cmd.substring(13,cmd.length()).trim());
 		} else if (cmd.startsWith("insert into")) {
 			insertInto(cmd.substring(11,cmd.length()).trim());
 		} else if (cmd.startsWith("delete from")) {
-			System.out.println("delete from");
+			deleteFrom(cmd.substring(11,cmd.length()).trim());
 		} else {
 			throw new Exception("Invalid Syntax.");
 		}
@@ -104,7 +93,12 @@ public class Parser
 			} else if (columnDef[1].equals("float")) {
 				type = new SQLFloat();
 			} else if (columnDef[1].startsWith("char(")&&columnDef[1].endsWith(")")) {
-				int stringLength = Integer.parseInt(columnDef[1].substring(5, columnDef[1].length()-1));
+				int stringLength;
+				try {
+					stringLength = Integer.parseInt(columnDef[1].substring(5, columnDef[1].length()-1));
+				} catch (Exception e) {
+					throw new Exception("Invalid type.");
+				}
 				if (1<=stringLength&&stringLength<=255) {
 					type = new SQLString(stringLength);
 				} else {
@@ -119,13 +113,20 @@ public class Parser
 				throw new Exception("Invalid syntax.");
 			}
 			schema.add(new Column(columnDef[0],type,(pkName.equals(columnDef[0])),(isUnique==1)));
+			if (columnDef[0].length()>32) {
+				System.out.println("Column Name" + columnDef[0] + "trimed to 32 chars.");
+			}
 		}
 		if (pkValid==0) {
 			throw new Exception("Primary key constraint failed.");
 		}
+		if (schema.size()>32) {
+			throw new Exception("Too many columns.");
+		}
 		FileBuffer fileBuffer = new FileBuffer(tableFile);
 		Table table = new Table(fileBuffer,schema);
 		fileBuffer.close();
+		System.out.println("Create table accomplished.");
 	}
 	private static void dropTable(String cmd) throws Exception
 	{
@@ -245,5 +246,177 @@ public class Parser
 			throw new Exception("Schema not match.");
 		}
 		fileBuffer.close();
+		System.out.println("Insert into accomplished.");
+	}
+	private static void deleteFrom(String cmd) throws Exception
+	{
+		String tableName;
+		String[] conditions;
+		String columnName;
+		SQLPredicate predicate;
+		SQLElement value;
+		String[] oneConditon;
+		String predicateS;
+		tableName = cmd.split(" ")[0];
+		File tableFile = new File(tableName);
+		if (!tableFile.exists()) {
+			throw new Exception("No such table.");
+		}
+		FileBuffer fileBuffer = new FileBuffer(tableFile);
+		Table table = new Table(fileBuffer);
+		cmd = cmd.substring(tableName.length(),cmd.length()).trim();
+		if (cmd.contains("where")) {
+			table.clearSelect();
+			cmd = cmd.substring(5,cmd.length());
+			conditions = cmd.split("and");
+			for (String s : conditions) {
+				s = s.trim();
+				if (s.contains("<=")) {
+					predicateS = "<=";
+				} else if (s.contains(">=")) {
+					predicateS = ">=";
+				} else if (s.contains("!=")) {
+					predicateS = "!=";
+				} else if (s.contains("<")) {
+					predicateS = "<";
+				} else if (s.contains(">")) {
+					predicateS = ">";
+				} else if (s.contains("=")) {
+					predicateS = "=";
+				} else {
+					fileBuffer.close();
+					throw new Exception("Invalid predicate.");
+				}
+				oneConditon = s.split(predicateS);
+				if (oneConditon.length<2) {
+					fileBuffer.close();
+					throw new Exception("Invalid value.");
+				}
+				columnName = oneConditon[0].trim();
+				int columnIndex = table.getColumnIndex(columnName);
+				if (columnIndex==-1) {
+					fileBuffer.close();
+					throw new Exception("No such column.");
+				}
+				switch (predicateS) {
+				case "<=": predicate = SQLPredicate.LEQUAL; break;
+				case ">=": predicate = SQLPredicate.GEQUAL; break;
+				case "!=": predicate = SQLPredicate.NOTEQUAL; break;
+				case "<": predicate = SQLPredicate.LESS; break;
+				case ">": predicate = SQLPredicate.GREATER; break;
+				default: predicate = SQLPredicate.EQUAL; break;
+				}
+				try {
+					value = table.getColumns().get(columnIndex).getType().parse(oneConditon[1].trim());
+				} catch (Exception e) {
+					fileBuffer.close();
+					throw new Exception("Invalid value.");
+				}
+				table.selectAnd(columnIndex,predicate,value);
+			}
+		}
+		int cnt = 0;
+		for (Record record : table) {
+			record.remove();
+			cnt++;
+		}
+		fileBuffer.close();
+		if (cnt>1) {
+			System.out.println(cnt + "line affected.");
+		}
+	}
+	private static void selectFrom (String cmd) throws Exception
+	{
+		String tableName;
+		String[] conditions;
+		String columnName;
+		SQLPredicate predicate;
+		SQLElement value;
+		String[] oneConditon;
+		String predicateS;
+		tableName = cmd.split(" ")[0];
+		File tableFile = new File(tableName);
+		if (!tableFile.exists()) {
+			throw new Exception("No such table.");
+		}
+		FileBuffer fileBuffer = new FileBuffer(tableFile);
+		Table table = new Table(fileBuffer);
+		cmd = cmd.substring(tableName.length(),cmd.length()).trim();
+		if (cmd.contains("where")) {
+			table.clearSelect();
+			cmd = cmd.substring(5,cmd.length());
+			conditions = cmd.split("and");
+			for (String s : conditions) {
+				s = s.trim();
+				if (s.contains("<=")) {
+					predicateS = "<=";
+				} else if (s.contains(">=")) {
+					predicateS = ">=";
+				} else if (s.contains("!=")) {
+					predicateS = "!=";
+				} else if (s.contains("<")) {
+					predicateS = "<";
+				} else if (s.contains(">")) {
+					predicateS = ">";
+				} else if (s.contains("=")) {
+					predicateS = "=";
+				} else {
+					fileBuffer.close();
+					throw new Exception("Invalid predicate.");
+				}
+				oneConditon = s.split(predicateS);
+				if (oneConditon.length<2) {
+					fileBuffer.close();
+					throw new Exception("Invalid value.");
+				}
+				columnName = oneConditon[0].trim();
+				int columnIndex = table.getColumnIndex(columnName);
+				if (columnIndex==-1) {
+					fileBuffer.close();
+					throw new Exception("No such column.");
+				}
+				switch (predicateS) {
+				case "<=": predicate = SQLPredicate.LEQUAL; break;
+				case ">=": predicate = SQLPredicate.GEQUAL; break;
+				case "!=": predicate = SQLPredicate.NOTEQUAL; break;
+				case "<": predicate = SQLPredicate.LESS; break;
+				case ">": predicate = SQLPredicate.GREATER; break;
+				default: predicate = SQLPredicate.EQUAL; break;
+				}
+				try {
+					value = table.getColumns().get(columnIndex).getType().parse(oneConditon[1].trim());
+				} catch (Exception e) {
+					fileBuffer.close();
+					throw new Exception("Invalid value.");
+				}
+				table.selectAnd(columnIndex,predicate,value);
+			}
+			int cnt = 0;
+			List<Column> columns = table.getColumns();
+			int numOfColumns = columns.size();
+			int[] columnWidth = new int[numOfColumns];
+			int current = 0;
+			for (int i=0;i<numOfColumns;i++) {
+				columnWidth[i] = columns.get(i).getName().length();
+			}
+			for (Record record : table) {
+				cnt++;
+				for (int i=0;i<numOfColumns;i++) {
+					current = record.get(i).toString().length();
+					if (current > columnWidth[i]) {
+						columnWidth[i] = current;
+					}
+				}
+			}
+			
+			fileBuffer.close();
+			if (cnt==0) {
+				System.out.println("Empty result.");
+			} else if (cnt>1){
+				System.out.println(cnt + "lines affected.");
+			} else {
+				System.out.println(cnt + "line affected.");
+			}
+		}
 	}
 }
