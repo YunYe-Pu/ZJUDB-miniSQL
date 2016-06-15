@@ -1,5 +1,7 @@
 package miniSQL.api;
 
+import miniSQL.IOHelper;
+
 public class SQLInteger extends SQLElement
 {
 	public final int content;
@@ -32,10 +34,7 @@ public class SQLInteger extends SQLElement
 	@Override
 	public void write(byte[] block, int offset)
 	{
-		block[offset++] = (byte)this.content;
-		block[offset++] = (byte)(this.content >> 8);
-		block[offset++] = (byte)(this.content >> 16);
-		block[offset] = (byte)(this.content >> 24);
+		IOHelper.writeInteger(block, offset, this.content);
 	}
 
 	@Override
@@ -52,13 +51,7 @@ public class SQLInteger extends SQLElement
 	@Override
 	public SQLInteger read(byte[] block, int offset)
 	{
-		int i;
-		offset += 3;
-		i = block[offset--] & 255;
-		i = (i << 8) | (block[offset--] & 255);
-		i = (i << 8) | (block[offset--] & 255);
-		i = (i << 8) | (block[offset] & 255);
-		return new SQLInteger(i);
+		return new SQLInteger(IOHelper.readInteger(block, offset));
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package miniSQL.api;
 
+import miniSQL.IOHelper;
+
 public class SQLFloat extends SQLElement
 {
 	public final float content;
@@ -37,11 +39,7 @@ public class SQLFloat extends SQLElement
 	@Override
 	public void write(byte[] block, int offset)
 	{
-		int val = Float.floatToRawIntBits(this.content);
-		block[offset++] = (byte)val;
-		block[offset++] = (byte)(val >> 8);
-		block[offset++] = (byte)(val >> 16);
-		block[offset] = (byte)(val >> 24);
+		IOHelper.writeFloat(block, offset, this.content);
 	}
 
 	@Override
@@ -58,13 +56,7 @@ public class SQLFloat extends SQLElement
 	@Override
 	public SQLFloat read(byte[] block, int offset)
 	{
-		int bits;
-		offset += 3;
-		bits = block[offset--] & 255;
-		bits = (bits << 8) | (block[offset--] & 255);
-		bits = (bits << 8) | (block[offset--] & 255);
-		bits = (bits << 8) | (block[offset] & 255);
-		return new SQLFloat(Float.intBitsToFloat(bits));
+		return new SQLFloat(IOHelper.readFloat(block, offset));
 	}
 
 	@Override
