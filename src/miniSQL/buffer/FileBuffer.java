@@ -16,7 +16,7 @@ import miniSQL.api.SQLSerializable;
 
 public class FileBuffer
 {
-	public static final int BlockCount = 5;
+	public static final int BlockCount = 10;
 	
 	File f;
 	
@@ -54,9 +54,11 @@ public class FileBuffer
 				int i = 0;
 				int subbufindex, hblockindex, size;
 				while(true){
+					b = getBlock(0);
 					subbufindex = b.getInt(i * 12);
 					hblockindex = b.getInt(i * 12 + 4);
 					size = b.getInt(i * 12 + 8);
+					//System.out.println("" + subbufindex);
 					if(subbufindex < 0) break;
 					subbufs.put(subbufindex, new SubBuffer(this, subbufindex, size, hblockindex));
 					i++;
@@ -67,6 +69,7 @@ public class FileBuffer
 				MaxBlockIndex = b.getInt(0);
 				i = 0;
 				while(true){
+					b = getBlock(1);
 					blockindex = b.getInt(i * 4 + 4);
 					if(blockindex < 0) break;
 					emptyBlockIndex.add(blockindex);
@@ -77,6 +80,7 @@ public class FileBuffer
 				MaxSubbufIndex = b.getInt(0);
 				i = 0;
 				while(true){
+					b = getBlock(2);
 					subbufindex = b.getInt(i * 4 + 4);
 					if(subbufindex < 0) break;
 					emptySubbufIndex.add(subbufindex);
@@ -85,17 +89,22 @@ public class FileBuffer
 			}
 		}catch(IOException ioe){
 			ioe.printStackTrace();
-		}/*
+		}
 		System.out.println("Filebuf Created with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
 		subbufs.forEach(new BiConsumer<Integer, SubBuffer>(){
 			public void accept(Integer i, SubBuffer s){
-				System.out.println("Subbuf " + i + " with headblock " + s.hblockIndex);
+				System.out.println("Subbuf " + i + " with head block "+ s.hblockIndex + " "+ s);
 			}
 		});
-		*/
 	}
 	
 	public void close(){
+		System.out.println("Filebuf Closed with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
+		subbufs.forEach(new BiConsumer<Integer, SubBuffer>(){
+			public void accept(Integer i, SubBuffer s){
+				System.out.println("Subbuf " + i + " with head block "+ s.hblockIndex + " "+ s);
+			}
+		});
 		int i = 0;
 		Block b = getBlock(0);
 		Iterator<Map.Entry<Integer, SubBuffer>> iterSubBuf = subbufs.entrySet().iterator();
@@ -103,10 +112,13 @@ public class FileBuffer
 			Map.Entry<Integer, SubBuffer> entry = iterSubBuf.next();
 			SubBuffer subbuf = entry.getValue();
 			int subbufindex = entry.getKey();
+			b = getBlock(0);
+			//System.out.println("writing in b0 " + subbufindex);
 			b.setInt(i*12, subbufindex);
 			b.setInt(i*12 + 4, subbuf.hblockIndex);
 			b.setInt(i*12 + 8, subbuf.size);
 			i++;
+			subbuf.close();
 		}
 		b.setInt(i*12, -1);
 		b.setInt(i*12 + 4, -1);
@@ -116,6 +128,7 @@ public class FileBuffer
 		b.setInt(0, MaxBlockIndex);
 		i = 0;
 		while(!emptyBlockIndex.isEmpty()){
+			b = getBlock(1);
 			b.setInt(i*4 + 4, emptyBlockIndex.poll());
 			i++;
 		}
@@ -125,6 +138,7 @@ public class FileBuffer
 		b.setInt(0, MaxSubbufIndex);
 		i = 0;
 		while(!emptySubbufIndex.isEmpty()){
+			b = getBlock(2);
 			b.setInt(i*4 + 4, emptySubbufIndex.poll());
 			i++;
 		}
@@ -173,7 +187,6 @@ public class FileBuffer
 	
 	public void deleteSubBuffer(int index)
 	{
-		//System.out.println("Deleting SubBuf " + index);
 		emptySubbufIndex.add(index);
 		subbufs.get(index).onDelete();
 	}
@@ -233,7 +246,7 @@ public class FileBuffer
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
-		//System.out.println("Block " + index + " writeback");
+		System.out.println("Block " + index + " writeback");
 	}
 	
 	// totally delete the block, not write back
@@ -283,7 +296,7 @@ public class FileBuffer
 			subbuf = nfb.getSubBuffer(index);
 			subbuf.write(subbuf.allocateEntry(), rawdata);
 		}
-		//nfb.deleteSubBuffer(index);
+		rawdata.val[1] = 2;
 		nfb.close();
 	}
 	*/

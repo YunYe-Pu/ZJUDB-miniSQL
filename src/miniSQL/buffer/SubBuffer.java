@@ -2,6 +2,7 @@ package miniSQL.buffer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 import miniSQL.api.SQLSerializable;
 
@@ -15,6 +16,16 @@ public class SubBuffer<T extends SQLSerializable<T>>
 	ArrayList<Integer> blocksIndex = new ArrayList<Integer>();
 	LinkedList<Integer> emptyEntryIndex = new LinkedList<Integer>();
 	int MaxEntryIndex;
+	
+	public String toString(){
+		String s = new String("blocks are:");
+		for(int i = 0; blocksIndex.size() > i && blocksIndex.get(i) != 0; i++){
+			s = s + blocksIndex.get(i) + " ";
+		}
+		s = s + " and ";
+		s = s + "maxentry are:" + MaxEntryIndex + "\n";
+		return s;
+	}
 	
 	public SubBuffer(FileBuffer filebuf, int index, int size){
 		//System.out.println("SubBuf " + index + " Created");
@@ -63,7 +74,9 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		int i;
 		Block hblock = filebuf.getBlock(hblockIndex);
 		hblock.setInt(0, MaxEntryIndex);
-		for(i = 0; blocksIndex.size() < i && blocksIndex.get(i) != 0; i++){
+		//System.out.println("0" + " |&| " + blocksIndex.size()); 
+		for(i = 0; blocksIndex.size() > i && blocksIndex.get(i) != 0; i++){
+			//System.out.println("blockindex " + blocksIndex.get(i) + " written");
 			hblock.setInt((i + 1) * 4, blocksIndex.get(i));
 		}
 	}
@@ -101,7 +114,8 @@ public class SubBuffer<T extends SQLSerializable<T>>
 					entryindex = i;
 					break;
 				}
-			}	
+			}
+			//if(index == 1) System.out.println("allo to sub1 with" + i);
 		}
 		if(entryindex/EntryCount + 1 > blocksIndex.size()){
 			for(i = blocksIndex.size(); i < entryindex/EntryCount + 1; i++){
