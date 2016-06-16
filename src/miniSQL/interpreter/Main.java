@@ -30,7 +30,10 @@ public class Main
 			} else {
 				cmd += " " + temp.substring(0,temp.indexOf(";")).trim();
 				try
-				{
+				{	
+					if (!scannerStack.isEmpty()) {
+						System.out.println(">>>" + cmd.trim());
+					}
 					Parser.parse(cmd.trim());
 				} catch (Exception e){
 					if (e.getMessage().equals("quit")) {
@@ -50,7 +53,6 @@ public class Main
 						}
 					} else {
 						System.out.println(e.getMessage());
-						e.printStackTrace();
 					}
 				}
 				cmd = new String();
