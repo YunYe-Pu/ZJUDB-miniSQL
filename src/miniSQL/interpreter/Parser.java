@@ -187,16 +187,16 @@ public class Parser
 		record.set(0, new SQLString(indexName,LEGNTH));
 		record.set(1, new SQLString(tableName, LEGNTH));
 		record.set(2, new SQLInteger(columnIndex));
-		if (!indexTable.insert(record)) {
-			fileBuffer.close();
-			throw new Exception("Duplicated index name.");
-		}
 		if (table.getColumns().get(columnIndex).isIndexed()) {
 			fileBuffer.close();
 			throw new Exception("Index already existed.");
 		} else if (!table.getColumns().get(columnIndex).isUnique()) {
 			fileBuffer.close();
 			throw new Exception("Column is not unique.");
+		}
+		if (!indexTable.insert(record)) {
+			fileBuffer.close();
+			throw new Exception("Duplicated index name.");
 		}
 		table.getColumns().get(columnIndex).createIndex();
 		fileBuffer.close();
