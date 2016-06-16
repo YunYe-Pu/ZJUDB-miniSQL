@@ -26,6 +26,7 @@ public class Block {
 	}
 	
 	public Block(int index, byte[] val){
+		this.index = index;
 		this.val = val;
 	}
 	
