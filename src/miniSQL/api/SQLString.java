@@ -1,5 +1,7 @@
 package miniSQL.api;
 
+import miniSQL.IOHelper;
+
 public class SQLString extends SQLElement
 {
 	public final String content;
@@ -34,12 +36,7 @@ public class SQLString extends SQLElement
 	@Override
 	public void write(byte[] block, int offset)
 	{
-		byte[] data = this.content.getBytes();
-		int i;
-		for(i = 0; i < this.length && i < data.length; i++)
-			block[i + offset] = data[i];
-		for(; i < this.length; i++)
-			block[i + offset] = 0;
+		IOHelper.writeString(block, offset, this.content, this.length);
 	}
 
 	@Override
@@ -51,12 +48,7 @@ public class SQLString extends SQLElement
 	@Override
 	public SQLString read(byte[] block, int offset)
 	{
-		int i;
-		for(i = offset; i < this.length && block[i] != 0; i++);
-		char[] data = new char[i];
-		for(i = 0; i < data.length; i++)
-			data[i] = (char)block[i + offset];
-		return new SQLString(String.valueOf(data), this.length);
+		return new SQLString(IOHelper.readString(block, offset, this.length), this.length);
 	}
 
 	@Override

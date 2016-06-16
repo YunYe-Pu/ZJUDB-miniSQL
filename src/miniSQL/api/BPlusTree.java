@@ -1,5 +1,6 @@
 package miniSQL.api;
 
+import miniSQL.IOHelper;
 import miniSQL.buffer.SubBuffer;
 
 public class BPlusTree
@@ -408,11 +409,11 @@ public class BPlusTree
 		@Override
 		public void write(byte[] block, int offset)
 		{
-			writeInt(block, offset, this.ptr[0]);
-			writeInt(block, offset + 4, this.ptr[1]);
-			writeInt(block, offset + 8, this.ptr[2]);
-			writeInt(block, offset + 12, this.ptr[3]);
-			writeInt(block, offset + 16, this.prev);
+			IOHelper.writeInteger(block, offset, this.ptr[0]);
+			IOHelper.writeInteger(block, offset + 4, this.ptr[1]);
+			IOHelper.writeInteger(block, offset + 8, this.ptr[2]);
+			IOHelper.writeInteger(block, offset + 12, this.ptr[3]);
+			IOHelper.writeInteger(block, offset + 16, this.prev);
 			offset += 20;
 			if(this.key[0] != null)
 				this.key[0].write(block, offset);
@@ -428,11 +429,11 @@ public class BPlusTree
 		public BPlusTreeNode read(byte[] block, int offset)
 		{
 			BPlusTreeNode ret = new BPlusTreeNode(this.keyType);
-			ret.ptr[0] = readInt(block, offset);
-			ret.ptr[1] = readInt(block, offset + 4);
-			ret.ptr[2] = readInt(block, offset + 8);
-			ret.ptr[3] = readInt(block, offset + 12);
-			ret.prev = readInt(block, offset + 16);
+			ret.ptr[0] = IOHelper.readInteger(block, offset);
+			ret.ptr[1] = IOHelper.readInteger(block, offset + 4);
+			ret.ptr[2] = IOHelper.readInteger(block, offset + 8);
+			ret.ptr[3] = IOHelper.readInteger(block, offset + 12);
+			ret.prev = IOHelper.readInteger(block, offset + 16);
 			offset += 20;
 			ret.key[0] = this.keyType.read(block, offset);
 			offset += this.keyType.getSize();
@@ -451,25 +452,6 @@ public class BPlusTree
 				ret.keyCnt = 4;
 			return ret;
 		}
-
-		private static void writeInt(byte[] block, int offset, int value)
-		{
-			block[offset++] = (byte)value;
-			block[offset++] = (byte)(value >> 8);
-			block[offset++] = (byte)(value >> 16);
-			block[offset] = (byte)(value >> 24);
-		}
-		
-		private static int readInt(byte[] block, int offset)
-		{
-			int i;
-			i = block[offset + 3] & 255;
-			i = (i << 8) | (block[offset + 2] & 255);
-			i = (i << 8) | (block[offset + 1] & 255);
-			i = (i << 8) | (block[offset] & 255);
-			return i;
-		}
-		
 	}
 
 	public class IntIterator
