@@ -54,7 +54,7 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		for(int blockindex : blocksIndex){
 			if(blockindex == 0) break;
 			for(j = 0; j < EntryCount; j++){
-				if(hblock.val[Block.BlockSize - EntryCount + j] == (byte) 0){
+				if(i * EntryCount + j < MaxEntryIndex && filebuf.getBlock(blockindex).val[Block.BlockSize - EntryCount + j] == (byte) 0){
 					emptyEntryIndex.add(i * EntryCount + j);
 				}
 			}
