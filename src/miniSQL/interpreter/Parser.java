@@ -19,16 +19,16 @@ public class Parser
 	private static final int LEGNTH = 64;
 	static Table indexTable;
 	static FileBuffer indexFileBuffer;
-//	static 
-//	{
-//		File file = new File("index");
-//		indexFileBuffer = new FileBuffer(file);
-//		indexTable = new Table(indexFileBuffer);
-//	}
-//	public static void close()
-//	{
-//		indexFileBuffer.close();
-//	}
+	static 
+	{
+		File file = new File("index");
+		indexFileBuffer = new FileBuffer(file);
+		indexTable = new Table(indexFileBuffer);
+	}
+	public static void close()
+	{
+		indexFileBuffer.close();
+	}
 	public static void  parse(String cmd) throws Exception
 	{
 		if (cmd.equals("quit")) {
@@ -70,11 +70,13 @@ public class Parser
 		cmd = cmd.substring(cmd.indexOf("(")+1,cmd.length()-1).trim();
 		tableDef = cmd.split(",");
 		int hasPK = 0;
+		for (int i=0;i<tableDef.length;i++) {
+			tableDef[i] = tableDef[i].trim();
+		}
 		for (String s : tableDef) {
-			s = s.trim();
 			if (s.contains("primary key")) {
 				hasPK = 1;
-				pkName = s.split(" ")[2].trim();
+				pkName = s.substring(11,s.length()).trim();
 				pkName = pkName.substring(1, pkName.length()-1);
 			}
 		}
@@ -155,8 +157,8 @@ public class Parser
 			throw new Exception("Invalid Syntax.");
 		}
 		indexDef = cmd.split("on");
-		for (String string : indexDef) {
-			string = string.trim();
+		for (int i=0;i<indexDef.length;i++) {
+			indexDef[i] = indexDef[i].trim();
 		}
 		indexName = indexDef[0];
 		if (!(indexDef[1].contains("(")&&indexDef[1].contains(")"))) {
@@ -242,12 +244,15 @@ public class Parser
 		Record record = new Record(table);
 		try {
 			for (int i=0;i<values.length;i++) {
-				record.parse(i,values[i]);
+				record.parse(i,values[i].trim());
 			}
 		} catch (Exception e) {
 			throw new Exception("Schema not match.");
 		}
-		table.insert(record);
+		if (!table.insert(record)) {
+			fileBuffer.close();
+			throw new Exception("Duplicated value.");
+		}
 		fileBuffer.close();
 		System.out.println("Insert into accomplished.");
 	}
@@ -272,8 +277,10 @@ public class Parser
 			table.clearSelect();
 			cmd = cmd.substring(5,cmd.length());
 			conditions = cmd.split("and");
+			for (int i = 0;i<conditions.length;i++) {
+				conditions[i] = conditions[i].trim();
+			}
 			for (String s : conditions) {
-				s = s.trim();
 				if (s.contains("<=")) {
 					predicateS = "<=";
 				} else if (s.contains(">=")) {
@@ -325,9 +332,9 @@ public class Parser
 		}
 		fileBuffer.close();
 		if (cnt>1) {
-			System.out.println(cnt + "lines affected.");
+			System.out.println(cnt + " lines affected.");
 		} else {
-			System.out.println(cnt + "line affected.");
+			System.out.println(cnt + " line affected.");
 		}
 	} 
 	private static void selectFrom (String cmd) throws Exception
@@ -351,8 +358,10 @@ public class Parser
 			table.clearSelect();
 			cmd = cmd.substring(5,cmd.length());
 			conditions = cmd.split("and");
+			for (int i = 0;i<conditions.length;i++) {
+				conditions[i] = conditions[i].trim();
+			}
 			for (String s : conditions) {
-				s = s.trim();
 				if (s.contains("<=")) {
 					predicateS = "<=";
 				} else if (s.contains(">=")) {
@@ -423,9 +432,9 @@ public class Parser
 		if (cnt==0) {
 			System.out.println("Empty result.");
 		} else if (cnt>1){
-			System.out.println(cnt + "lines affected.");
+			System.out.println(cnt + " lines affected.");
 		} else {
-			System.out.println(cnt + "line affected.");
+			System.out.println(cnt + " line affected.");
 		}
 	}
 }
