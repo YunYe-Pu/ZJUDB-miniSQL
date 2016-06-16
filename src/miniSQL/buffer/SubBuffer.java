@@ -104,7 +104,8 @@ public class SubBuffer<T extends SQLSerializable<T>>
 			}	
 		}
 		if(entryindex/EntryCount + 1 > blocksIndex.size()){
-			for(i = blocksIndex.size(); i < index/EntryCount + 1; i++){
+			for(i = blocksIndex.size(); i < entryindex/EntryCount + 1; i++){
+				
 				int blockindex = filebuf.createNewBlock();
 				blocksIndex.add(blockindex);
 			}

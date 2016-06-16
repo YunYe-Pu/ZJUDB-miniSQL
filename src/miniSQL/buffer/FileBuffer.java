@@ -170,7 +170,7 @@ public class FileBuffer
 		}else{
 			i = emptyBlockIndex.poll();
 		}
-		//System.out.println("Creating Block " + i + "\t");
+		System.out.println("Creating Block " + i + "\t");
 		Block b = new Block(i, curage++);
 		addBlock(i, b);
 		return i;
@@ -201,7 +201,7 @@ public class FileBuffer
 			}
 			block = new Block(index, val);
 			addBlock(index, block);
-			//System.out.println("BLock " + index + " fetched back");
+			System.out.println("BLock " + index + " fetched back");
 		}else{
 			block = blocks.get(index);
 		}
@@ -218,7 +218,7 @@ public class FileBuffer
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
-		//System.out.println("Block " + index + " writeback");
+		System.out.println("Block " + index + " writeback");
 	}
 	
 	// totally delete the block, not write back
@@ -229,7 +229,7 @@ public class FileBuffer
 		ageBlockQueue.remove(b);
 	}
 	
-	/*
+	
 	public static void main(String[] args){
 		class Datatype implements SQLSerializable<Datatype>{
 			int size;
@@ -255,7 +255,7 @@ public class FileBuffer
 			}
 		}
 		File f;
-		int size = 10;
+		int size = 100;
 		f = new File("E://test.msq");
 		FileBuffer nfb = new FileBuffer(f);
 		SubBuffer subbuf;
@@ -271,5 +271,5 @@ public class FileBuffer
 		rawdata.val[1] = 2;
 		nfb.close();
 	}
-	*/
+	
 }
