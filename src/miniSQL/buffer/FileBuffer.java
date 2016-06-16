@@ -26,13 +26,7 @@ public class FileBuffer
 	LinkedList<Integer> emptySubbufIndex = new LinkedList<Integer>();
 	PriorityQueue<Block> ageBlockQueue = new PriorityQueue<Block>(new Comparator<Block>(){
 		 public int compare(Block b1, Block b2){
-			 if(b1.age< b2.age){
-				 return -1;
-			 }else if(b1.age == b2.age){
-				 return 0;
-			 }else{
-				 return 1;
-			 }
+			 return b1.age - b2.age;
 		 }
 	 }); 
 	int curage = 0;
@@ -111,9 +105,9 @@ public class FileBuffer
 		*/
 		int i = 0;
 		Block b = getBlock(0);
-		Iterator<Map.Entry<Integer, SubBuffer>> iterSubBuf = subbufs.entrySet().iterator();
-		while(iterSubBuf.hasNext()){
-			Map.Entry<Integer, SubBuffer> entry = iterSubBuf.next();
+
+		for(Map.Entry<Integer, SubBuffer> entry : subbufs.entrySet())
+		{
 			SubBuffer subbuf = entry.getValue();
 			int subbufindex = entry.getKey();
 			b = getBlock(0);

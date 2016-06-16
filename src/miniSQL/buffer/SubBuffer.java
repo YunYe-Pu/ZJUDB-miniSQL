@@ -2,7 +2,6 @@ package miniSQL.buffer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.function.Consumer;
 
 import miniSQL.api.SQLSerializable;
 
@@ -13,9 +12,12 @@ public class SubBuffer<T extends SQLSerializable<T>>
 	int size;
 	int EntryCount;
 	int hblockIndex;
-	ArrayList<Integer> blocksIndex = new ArrayList<Integer>();
-	LinkedList<Integer> emptyEntryIndex = new LinkedList<Integer>();
+	ArrayList<Integer> blocksIndex = new ArrayList<>();
+	LinkedList<Integer> emptyEntryIndex = new LinkedList<>();
 	int MaxEntryIndex;
+	
+	private Object[] entryPool = new Object[32];
+	private int[] entryPoolIndex = new int[32];
 	
 	public String toString(){
 		String s = new String("blocks are:");
@@ -35,6 +37,9 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		EntryCount = (Block.BlockSize) / (size + 1);
 		hblockIndex = filebuf.createNewBlock();
 		MaxEntryIndex = -1;
+		
+		for(int i = 0; i < 32; i++)
+			entryPoolIndex[i] = -1;
 	}	
 	
 	//read in a subbuffer according to the existing file
@@ -60,6 +65,9 @@ public class SubBuffer<T extends SQLSerializable<T>>
 			}
 			i++;
 		}
+
+		for(i = 0; i < 32; i++)
+			entryPoolIndex[i] = -1;
 	}	
 	
 	public void onDelete(){
@@ -83,12 +91,17 @@ public class SubBuffer<T extends SQLSerializable<T>>
 	
 	public T read(int index, T obj)
 	{
+		if(entryPoolIndex[index & 31] == index)
+			return (T)entryPool[index & 31];
 		Block b = filebuf.getBlock(blocksIndex.get(index/EntryCount));
 		filebuf.ageBlockQueue.remove(b);
 		b.age = filebuf.curage++;
 		filebuf.ageBlockQueue.add(b);
 		int entryinblock = index % EntryCount;
-		return obj.read(b.val, entryinblock * size);
+		T ret = obj.read(b.val, entryinblock * size);
+		entryPoolIndex[index & 31] = index;
+		entryPool[index & 31] = ret;
+		return ret;
 	}
 	
 	public void write(int index, T obj)
@@ -99,6 +112,8 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		filebuf.ageBlockQueue.add(b);
 		int entryinblock = index % EntryCount;
 		obj.write(b.val, entryinblock * size);
+		entryPool[index & 31] = obj;
+		entryPoolIndex[index & 31] = index;
 	}
 	
 	public int allocateEntry()
