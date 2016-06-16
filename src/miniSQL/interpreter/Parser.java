@@ -164,8 +164,8 @@ public class Parser
 		if (!(indexDef[1].contains("(")&&indexDef[1].contains(")"))) {
 			throw new Exception("Invalid Syntax.");
 		}
-		tableName = indexDef[1].split("(")[0].trim();
-		columnName = indexDef[1].split("(")[1].split(")")[0];
+		tableName = indexDef[1].split("\\(")[0].trim();
+		columnName = indexDef[1].split("\\(")[1].split("\\)")[0];
 		File tableFile = new File(tableName);
 		if (!tableFile.exists()) {
 			throw new Exception("No such table.");
