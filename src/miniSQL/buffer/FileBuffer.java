@@ -1,7 +1,15 @@
 package miniSQL.buffer;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.function.BiConsumer;
 
 import miniSQL.api.SQLSerializable;
 
@@ -77,8 +85,14 @@ public class FileBuffer
 			}
 		}catch(IOException ioe){
 			ioe.printStackTrace();
-		}
-		//System.out.println("Filebuf Created with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
+		}/*
+		System.out.println("Filebuf Created with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
+		subbufs.forEach(new BiConsumer<Integer, SubBuffer>(){
+			public void accept(Integer i, SubBuffer s){
+				System.out.println("Subbuf " + i + " with headblock " + s.hblockIndex);
+			}
+		});
+		*/
 	}
 	
 	public void close(){
@@ -159,6 +173,7 @@ public class FileBuffer
 	
 	public void deleteSubBuffer(int index)
 	{
+		//System.out.println("Deleting SubBuf " + index);
 		emptySubbufIndex.add(index);
 		subbufs.get(index).onDelete();
 	}
@@ -268,7 +283,7 @@ public class FileBuffer
 			subbuf = nfb.getSubBuffer(index);
 			subbuf.write(subbuf.allocateEntry(), rawdata);
 		}
-		rawdata.val[1] = 2;
+		//nfb.deleteSubBuffer(index);
 		nfb.close();
 	}
 	*/
