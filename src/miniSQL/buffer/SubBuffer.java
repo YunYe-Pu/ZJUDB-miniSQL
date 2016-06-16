@@ -47,14 +47,14 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		Block hblock = filebuf.getBlock(hblockIndex);
 		MaxEntryIndex = hblock.getInt(0);
 		int i, j;
-		for(i = 0; i <= MaxEntryIndex/EntryCount; i++){
+		for(i = 0; i <= MaxEntryIndex/EntryCount && MaxEntryIndex >= 0; i++){
 			blocksIndex.add(hblock.getInt((i+1) * 4));
 		}
 		i = 0;
 		for(int blockindex : blocksIndex){
 			if(blockindex == 0) break;
 			for(j = 0; j < EntryCount; j++){
-				if(hblock.val[Block.BlockSize - EntryCount + j] == (byte) 0){
+				if(i * EntryCount + j < MaxEntryIndex && filebuf.getBlock(blockindex).val[Block.BlockSize - EntryCount + j] == (byte) 0){
 					emptyEntryIndex.add(i * EntryCount + j);
 				}
 			}
@@ -118,8 +118,7 @@ public class SubBuffer<T extends SQLSerializable<T>>
 			//if(index == 1) System.out.println("allo to sub1 with" + i);
 		}
 		if(entryindex/EntryCount + 1 > blocksIndex.size()){
-			for(i = blocksIndex.size(); i < entryindex/EntryCount + 1; i++){
-				
+			for(i = blocksIndex.size(); i < entryindex/EntryCount + 1; i++){			
 				int blockindex = filebuf.createNewBlock();
 				blocksIndex.add(blockindex);
 			}
