@@ -50,6 +50,7 @@ public class Main
 						}
 					} else {
 						System.out.println(e.getMessage());
+						e.printStackTrace();
 					}
 				}
 				cmd = new String();
@@ -60,7 +61,7 @@ public class Main
 			scanner = scannerStack.pop();
 			scanner.close();
 		}
-		Parser.close();
+//		Parser.close();
 	}
 
 }

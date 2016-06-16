@@ -19,16 +19,16 @@ public class Parser
 	private static final int LEGNTH = 64;
 	static Table indexTable;
 	static FileBuffer indexFileBuffer;
-	static 
-	{
-		File file = new File("index");
-		indexFileBuffer = new FileBuffer(file);
-		indexTable = new Table(indexFileBuffer);
-	}
-	public static void close()
-	{
-		indexFileBuffer.close();
-	}
+//	static 
+//	{
+//		File file = new File("index");
+//		indexFileBuffer = new FileBuffer(file);
+//		indexTable = new Table(indexFileBuffer);
+//	}
+//	public static void close()
+//	{
+//		indexFileBuffer.close();
+//	}
 	public static void  parse(String cmd) throws Exception
 	{
 		if (cmd.equals("quit")) {
@@ -69,9 +69,11 @@ public class Parser
 		}
 		cmd = cmd.substring(cmd.indexOf("(")+1,cmd.length()-1).trim();
 		tableDef = cmd.split(",");
+		int hasPK = 0;
 		for (String s : tableDef) {
 			s = s.trim();
 			if (s.contains("primary key")) {
+				hasPK = 1;
 				pkName = s.split(" ")[2].trim();
 				pkName = pkName.substring(1, pkName.length()-1);
 			}
@@ -107,9 +109,9 @@ public class Parser
 			} else {
 				throw new Exception("Invalid type.");
 			}
-			if (columnDef[2].equals("unique")) {
+			if (columnDef.length>=3&&columnDef[2].equals("unique")) {
 				isUnique = 1;
-			} else if (columnDef[2] != null) {
+			} else if (columnDef.length>=3&&columnDef[2] != null) {
 				throw new Exception("Invalid syntax.");
 			}
 			schema.add(new Column(columnDef[0],type,(pkName.equals(columnDef[0])),(isUnique==1)));
@@ -117,7 +119,7 @@ public class Parser
 				System.out.println("Column Name" + columnDef[0] + "trimed to 32 chars.");
 			}
 		}
-		if (pkValid==0) {
+		if (hasPK==1&&pkValid==0) {
 			throw new Exception("Primary key constraint failed.");
 		}
 		if (schema.size()>32) {
@@ -245,6 +247,7 @@ public class Parser
 		} catch (Exception e) {
 			throw new Exception("Schema not match.");
 		}
+		table.insert(record);
 		fileBuffer.close();
 		System.out.println("Insert into accomplished.");
 	}
@@ -322,9 +325,11 @@ public class Parser
 		}
 		fileBuffer.close();
 		if (cnt>1) {
+			System.out.println(cnt + "lines affected.");
+		} else {
 			System.out.println(cnt + "line affected.");
 		}
-	}
+	} 
 	private static void selectFrom (String cmd) throws Exception
 	{
 		String tableName;
@@ -391,36 +396,36 @@ public class Parser
 				}
 				table.selectAnd(columnIndex,predicate,value);
 			}
-			int cnt = 0;
-			List<Column> columns = table.getColumns();
-			int numOfColumns = columns.size();
-			int[] columnWidth = new int[numOfColumns];
-			int current = 0;
+		}
+		int cnt = 0;
+		List<Column> columns = table.getColumns();
+		int numOfColumns = columns.size();
+		int[] columnWidth = new int[numOfColumns];
+		int current = 0;
+		for (int i=0;i<numOfColumns;i++) {
+			columnWidth[i] = columns.get(i).getName().length();
+		}
+		for (Record record : table) {
+			cnt++;
 			for (int i=0;i<numOfColumns;i++) {
-				columnWidth[i] = columns.get(i).getName().length();
-			}
-			for (Record record : table) {
-				cnt++;
-				for (int i=0;i<numOfColumns;i++) {
-					current = record.get(i).toString().length();
-					if (current > columnWidth[i]) {
-						columnWidth[i] = current;
-					}
+				current = record.get(i).toString().length();
+				if (current > columnWidth[i]) {
+					columnWidth[i] = current;
 				}
 			}
-			table.printHeader(columnWidth, System.out);
-			for (Record record : table) {
-				record.print(columnWidth, System.out);
-			}
-			table.printFoot(columnWidth,System.out);
-			fileBuffer.close();
-			if (cnt==0) {
-				System.out.println("Empty result.");
-			} else if (cnt>1){
-				System.out.println(cnt + "lines affected.");
-			} else {
-				System.out.println(cnt + "line affected.");
-			}
+		}
+		table.printHeader(columnWidth, System.out);
+		for (Record record : table) {
+			record.print(columnWidth, System.out);
+		}
+		table.printFoot(columnWidth,System.out);
+		fileBuffer.close();
+		if (cnt==0) {
+			System.out.println("Empty result.");
+		} else if (cnt>1){
+			System.out.println(cnt + "lines affected.");
+		} else {
+			System.out.println(cnt + "line affected.");
 		}
 	}
 }
