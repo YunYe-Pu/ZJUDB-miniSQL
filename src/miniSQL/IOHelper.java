@@ -36,7 +36,7 @@ public final class IOHelper
 	{
 		if(maxLength < 0) maxLength = block.length - offset;
 		int i;
-		for(i = offset; i < maxLength && block[i] != 0; i++);
+		for(i = 0; i < maxLength && block[i + offset] != 0; i++);
 		char[] data = new char[i];
 		for(i = 0; i < data.length; i++)
 			data[i] = (char)block[i + offset];

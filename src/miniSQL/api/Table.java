@@ -34,7 +34,9 @@ public class Table implements Iterable<Record>
 		{
 			if(!columnBuffer.isEntryValid(i))
 				continue;
-			this.schema.add(columnBuffer.read(i, dummy));
+			Column c = columnBuffer.read(i, dummy);
+			c.setOwner(this, i);
+			this.schema.add(c);
 		}
 	}
 	
@@ -67,7 +69,10 @@ public class Table implements Iterable<Record>
 		{
 			int recIndex = column.getIndex().findRecord(value);
 			if(recIndex >= 0)
+			{
 				this.uniqueRecord = this.recordBuffer.read(recIndex, this.dummyRecord);
+				this.uniqueRecord.setIndexInBuffer(recIndex);
+			}
 			else
 				this.uniqueRecord = this.dummyRecord;//Mark as no selection
 		}
@@ -262,6 +267,7 @@ public class Table implements Iterable<Record>
 		@Override
 		public boolean hasNext()
 		{
+			if(this.nextRecord != null) return true;
 			do
 			{
 				while(!recordBuffer.isEntryValid(currIndex) && currIndex < maxIndex)
@@ -271,6 +277,7 @@ public class Table implements Iterable<Record>
 				else
 				{
 					this.nextRecord = recordBuffer.read(currIndex, dummyRecord);
+					this.nextRecord.setIndexInBuffer(currIndex);
 					currIndex++;
 				}
 			}
@@ -316,6 +323,7 @@ public class Table implements Iterable<Record>
 		@Override
 		public boolean hasNext()
 		{
+			if(this.nextRecord != null) return true;
 			do
 			{
 				int i;
@@ -326,6 +334,7 @@ public class Table implements Iterable<Record>
 				if(i == -1)
 					return false;
 				this.nextRecord = recordBuffer.read(i, dummyRecord);
+				this.nextRecord.setIndexInBuffer(i);
 			}
 			while(!this.predicate.test(this.nextRecord));
 			return true;
