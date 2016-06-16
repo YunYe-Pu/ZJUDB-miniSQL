@@ -80,6 +80,7 @@ public class Column implements SQLSerializable<Column>
 		this.owner.clearSelect();
 		for(Record rec : this.owner)
 			this.index.insertRecord(rec.get(this.indexInOwner), rec.getIndexInBuffer());
+		this.owner.getColumnBuffer().write(this.indexInOwner, this);
 	}
 	
 	public void dropIndex()
@@ -89,6 +90,7 @@ public class Column implements SQLSerializable<Column>
 		this.owner.getBuffer().deleteSubBuffer(this.indexSubBuffer);
 		this.index = null;
 		this.indexSubBuffer = -1;
+		this.owner.getColumnBuffer().write(this.indexInOwner, this);
 	}
 	
 	protected BPlusTree getIndex()

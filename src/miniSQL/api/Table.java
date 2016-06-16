@@ -14,6 +14,7 @@ public class Table implements Iterable<Record>
 	private ArrayList<Column> schema = new ArrayList<>();
 	private FileBuffer buffer;
 	private SubBuffer<Record> recordBuffer;
+	private SubBuffer<Column> columnBuffer;
 	
 	private static final Predicate<Record> predicatePlaceholder = r -> true;
 	private BPlusTree.IntIterator currIterator = null;
@@ -27,14 +28,14 @@ public class Table implements Iterable<Record>
 	{
 		this.buffer = buffer;
 		this.recordBuffer = buffer.getSubBuffer(1);
-		SubBuffer<Column> columnBuffer = buffer.getSubBuffer(0);
+		this.columnBuffer = buffer.getSubBuffer(0);
 		Column dummy = new Column(this);
-		int j = columnBuffer.getMaxEntryIndex();
+		int j = this.columnBuffer.getMaxEntryIndex();
 		for(int i = 0; i < j; i++)
 		{
-			if(!columnBuffer.isEntryValid(i))
+			if(!this.columnBuffer.isEntryValid(i))
 				continue;
-			Column c = columnBuffer.read(i, dummy);
+			Column c = this.columnBuffer.read(i, dummy);
 			c.setOwner(this, i);
 			this.schema.add(c);
 		}
@@ -45,13 +46,13 @@ public class Table implements Iterable<Record>
 		this.schema.addAll(schema);
 		this.buffer = buffer;
 		buffer.createSubBuffer(schema.get(0).getSize());
-		SubBuffer<Column> columnBuffer = buffer.getSubBuffer(0);
+		this.columnBuffer = buffer.getSubBuffer(0);
 		int recordSize = 0;
 		int i = 0;
 		for(Column e : schema)
 		{
 			recordSize += e.getType().getSize();
-			columnBuffer.write(columnBuffer.allocateEntry(), e);
+			this.columnBuffer.write(this.columnBuffer.allocateEntry(), e);
 			e.setOwner(this, i++);
 		}
 		buffer.createSubBuffer(recordSize);
@@ -247,6 +248,11 @@ public class Table implements Iterable<Record>
 	protected SubBuffer<Record> getRecBuffer()
 	{
 		return this.recordBuffer;
+	}
+	
+	protected SubBuffer<Column> getColumnBuffer()
+	{
+		return this.columnBuffer;
 	}
 
 	protected class LinearIterator implements Iterator<Record>
