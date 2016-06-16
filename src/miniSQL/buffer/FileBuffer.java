@@ -8,7 +8,7 @@ import miniSQL.api.SQLSerializable;
 
 public class FileBuffer
 {
-	public static final int BlockCount = 64;
+	public static final int BlockCount = 5;
 	
 	File f;
 	
@@ -78,6 +78,7 @@ public class FileBuffer
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
+		//System.out.println("Filebuf Created with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
 	}
 	
 	public void close(){
@@ -169,6 +170,7 @@ public class FileBuffer
 		}else{
 			i = emptyBlockIndex.poll();
 		}
+		//System.out.println("Creating Block " + i + "\t");
 		Block b = new Block(i, curage++);
 		addBlock(i, b);
 		return i;
@@ -176,7 +178,7 @@ public class FileBuffer
 	
 	// 
 	public void addBlock(int index, Block block){
-		if(blocks.size() > 64){
+		if(blocks.size() >= BlockCount){
 			int oldi = ageBlockQueue.poll().index;
 			writebackBlock(oldi);
 			blocks.remove(oldi);
@@ -199,6 +201,7 @@ public class FileBuffer
 			}
 			block = new Block(index, val);
 			addBlock(index, block);
+			//System.out.println("BLock " + index + " fetched back");
 		}else{
 			block = blocks.get(index);
 		}
@@ -215,6 +218,7 @@ public class FileBuffer
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
+		//System.out.println("Block " + index + " writeback");
 	}
 	
 	// totally delete the block, not write back
