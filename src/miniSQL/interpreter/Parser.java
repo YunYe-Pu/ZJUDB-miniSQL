@@ -13,7 +13,7 @@ import miniSQL.api.SQLPredicate;
 import miniSQL.api.SQLString;
 import miniSQL.api.Table;
 import miniSQL.buffer.FileBuffer;
-
+ 
 public class Parser
 {
 	private static final int LEGNTH = 64;
