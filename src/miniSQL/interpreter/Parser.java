@@ -93,6 +93,9 @@ public class Parser
 			for (int i=0;i<columnDef.length;i++) {
 				columnDef[i] = columnDef[i].trim();
 			}
+			if (columnDef.length<2) {
+				throw new Exception("Invalid syntax.");
+			}
 			if (columnDef[0].equals(pkName)) {
 				pkValid = 1;
 			}
