@@ -2,6 +2,7 @@ package miniSQL.buffer;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 import miniSQL.api.SQLSerializable;
 
@@ -16,7 +17,18 @@ public class SubBuffer<T extends SQLSerializable<T>>
 	LinkedList<Integer> emptyEntryIndex = new LinkedList<Integer>();
 	int MaxEntryIndex;
 	
+	public String toString(){
+		String s = new String("blocks are:");
+		for(int i = 0; blocksIndex.size() > i && blocksIndex.get(i) != 0; i++){
+			s = s + blocksIndex.get(i) + " ";
+		}
+		s = s + " and ";
+		s = s + "maxentry are:" + MaxEntryIndex + "\n";
+		return s;
+	}
+	
 	public SubBuffer(FileBuffer filebuf, int index, int size){
+		//System.out.println("SubBuf " + index + " Created");
 		this.filebuf = filebuf;
 		this.index = index;
 		this.size = size;
@@ -62,7 +74,9 @@ public class SubBuffer<T extends SQLSerializable<T>>
 		int i;
 		Block hblock = filebuf.getBlock(hblockIndex);
 		hblock.setInt(0, MaxEntryIndex);
-		for(i = 0; blocksIndex.size() < i && blocksIndex.get(i) != 0; i++){
+		//System.out.println("0" + " |&| " + blocksIndex.size()); 
+		for(i = 0; blocksIndex.size() > i && blocksIndex.get(i) != 0; i++){
+			//System.out.println("blockindex " + blocksIndex.get(i) + " written");
 			hblock.setInt((i + 1) * 4, blocksIndex.get(i));
 		}
 	}
@@ -89,26 +103,30 @@ public class SubBuffer<T extends SQLSerializable<T>>
 	
 	public int allocateEntry()
 	{
-		int index, i;
+		int entryindex, i;
 		while(true){
 			if(emptyEntryIndex.isEmpty()){
-				index = ++MaxEntryIndex;
+				entryindex = ++MaxEntryIndex;
 				break;
 			}else{
 			i = emptyEntryIndex.poll();
 				if(i < MaxEntryIndex){
-					index = i;
+					entryindex = i;
 					break;
 				}
-			}	
+			}
+			//if(index == 1) System.out.println("allo to sub1 with" + i);
 		}
-		if(index/EntryCount + 1 > blocksIndex.size()){
-			for(i = blocksIndex.size(); i < index/EntryCount + 1; i++){
-				blocksIndex.add(filebuf.createNewBlock());
+		if(entryindex/EntryCount + 1 > blocksIndex.size()){
+			for(i = blocksIndex.size(); i < entryindex/EntryCount + 1; i++){
+				
+				int blockindex = filebuf.createNewBlock();
+				blocksIndex.add(blockindex);
 			}
 		}
-		setEntryState(index, (byte)1);
-		return index;
+		//System.out.println("Sub "+ index + " Entry " + entryindex + " Created");
+		setEntryState(entryindex, (byte)1);
+		return entryindex;
 	}
 
 	public void removeEntry(int index)
