@@ -90,21 +90,25 @@ public class FileBuffer
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
+		/*
 		System.out.println("Filebuf Created with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
 		subbufs.forEach(new BiConsumer<Integer, SubBuffer>(){
 			public void accept(Integer i, SubBuffer s){
 				System.out.println("Subbuf " + i + " with head block "+ s.hblockIndex + " "+ s);
 			}
 		});
+		*/
 	}
 	
 	public void close(){
+		/*
 		System.out.println("Filebuf Closed with MaxBlockIndex " + MaxBlockIndex + "\tMaxSubbufIndex " + MaxSubbufIndex);
 		subbufs.forEach(new BiConsumer<Integer, SubBuffer>(){
 			public void accept(Integer i, SubBuffer s){
 				System.out.println("Subbuf " + i + " with head block "+ s.hblockIndex + " "+ s);
 			}
 		});
+		*/
 		int i = 0;
 		Block b = getBlock(0);
 		Iterator<Map.Entry<Integer, SubBuffer>> iterSubBuf = subbufs.entrySet().iterator();
@@ -246,7 +250,7 @@ public class FileBuffer
 		}catch(IOException ioe){
 			ioe.printStackTrace();
 		}
-		System.out.println("Block " + index + " writeback");
+		//System.out.println("Block " + index + " writeback");
 	}
 	
 	// totally delete the block, not write back

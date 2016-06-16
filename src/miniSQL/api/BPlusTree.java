@@ -146,6 +146,7 @@ public class BPlusTree
 			if(currNode.ptr[3] >= 0)
 			{
 				BPlusTreeNode nextNode = this.buffer.read(currNode.ptr[3], this.root);
+				nextNode.index = currNode.ptr[3];
 				nextNode.prev = newNode.index;
 				this.buffer.write(nextNode.index, nextNode);
 			}
@@ -262,12 +263,14 @@ public class BPlusTree
 		if(currNode.ptr[3] >= 0)
 		{
 			BPlusTreeNode nextNode = this.buffer.read(currNode.ptr[3], this.root);
+			nextNode.index = currNode.ptr[3];
 			nextNode.prev = currNode.prev;
 			this.buffer.write(nextNode.index, nextNode);
 		}
 		if(currNode.prev >= 0)
 		{
 			BPlusTreeNode prevNode = this.buffer.read(currNode.prev, this.root);
+			prevNode.index = currNode.prev;
 			prevNode.ptr[3] = currNode.ptr[3];
 			this.buffer.write(prevNode.index, prevNode);
 		}
@@ -286,6 +289,7 @@ public class BPlusTree
 			if(path == 0)
 			{
 				BPlusTreeNode sibling = this.buffer.read(parent.ptr[1], this.root);
+				sibling.index = parent.ptr[1];
 				if(sibling.keyCnt > 2)
 				{
 					currNode.keyCnt = 2;
@@ -309,6 +313,7 @@ public class BPlusTree
 			else
 			{
 				BPlusTreeNode sibling = this.buffer.read(parent.ptr[path - 1], this.root);
+				sibling.index = parent.ptr[path - 1];
 				if(sibling.keyCnt > 2)
 				{
 					sibling.keyCnt--;
@@ -335,6 +340,7 @@ public class BPlusTree
 		{
 			this.height--;
 			this.root = this.buffer.read(currNode.ptr[0], this.root);
+			this.root.index = currNode.ptr[0];
 		}
 		return true;
 	}
@@ -366,6 +372,7 @@ public class BPlusTree
 			this.pathStack[this.stackPtr] = i;
 			this.stackPtr++;
 			currNode = this.buffer.read(currNode.ptr[i], this.root);
+			currNode.index = currNode.ptr[i];
 		}
 		this.nodeStack[this.stackPtr] = currNode;
 		int cmp;

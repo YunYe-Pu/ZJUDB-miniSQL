@@ -61,7 +61,7 @@ public class Main
 			scanner = scannerStack.pop();
 			scanner.close();
 		}
-//		Parser.close();
+		Parser.close();
 	}
 
 }
