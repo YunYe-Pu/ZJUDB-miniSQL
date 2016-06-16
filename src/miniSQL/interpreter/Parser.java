@@ -85,10 +85,14 @@ public class Parser
 		SQLElement type;
 		int isUnique = 0;
 		for (String s : tableDef) {
+			isUnique = 0;
 			if (s.contains("primary key")) {
 				continue;
 			}
 			columnDef = s.split(" ");
+			for (int i=0;i<columnDef.length;i++) {
+				columnDef[i] = columnDef[i].trim();
+			}
 			if (columnDef[0].equals(pkName)) {
 				pkValid = 1;
 			}
